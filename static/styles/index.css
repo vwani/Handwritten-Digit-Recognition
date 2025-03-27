@@ -1,0 +1,18 @@
+h1 {
+    text-align: center;
+}
+
+.form {
+    border: 2px;
+    border-radius: 20px;
+    background-color: rgb(246, 230, 253);
+    padding: 20px;
+    margin-bottom: 10px;
+}
+
+.prediction {
+    border: 2px;
+    border-radius: 20px;
+    background-color: rgb(246, 230, 253);
+    padding: 20px;   
+}

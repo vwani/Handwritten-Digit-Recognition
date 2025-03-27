@@ -3,9 +3,16 @@ from models import CNN
 import torch
 import numpy as np
 from PIL import Image
-import io
+import io, os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+
+UPLOAD_FOLDER = "static/uploads"
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -28,8 +35,15 @@ def upload_file():
         return "No selected file"
     
     if file and file.content_type.startswith("image/"):
-        image = Image.open(io.BytesIO(file.read()))
 
+        file_bytes = file.read()
+
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+        with open(filepath, "wb") as f:
+            f.write(file_bytes)
+
+        image = Image.open(io.BytesIO(file_bytes))
         image = image.convert("L").resize((28,28))
         image = torch.tensor(np.array(image) / 255., dtype=torch.float32)
 
@@ -38,7 +52,7 @@ def upload_file():
         output = model(image)
         prediction = output.argmax(dim=1, keepdim=True).item()
 
-        return render_template("index.html", prediction=prediction)
+        return render_template("index.html", filename=filename, prediction=prediction)
 
     else:
         return "Invalid file type! Only images are allowed"
